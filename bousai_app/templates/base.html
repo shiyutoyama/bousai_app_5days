@@ -4,31 +4,322 @@
   <meta charset="utf-8">
   <title>{% block title %}防災アプリ{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --header-blue: #0a4e7a;
+      --bg: #f1f1f1;
+      --panel: #f7f7f7;
+      --border: #dfe5eb;
+      --text: #1f2d3d;
+      --muted: #72829a;
+      --success: #1aaf68;
+      --blue: #0e7ad5;
+      --shadow: rgba(17, 29, 39, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Yu Gothic Medium", "Hiragino Sans", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app-header {
+      background: var(--header-blue);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+    }
+
+    .header-inner {
+      width: min(1200px, 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+    }
+
+    .app-header h1 {
+      margin: 0;
+      color: white;
+      font-size: clamp(1.5rem, 2vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .menu-button {
+      border: none;
+      background: transparent;
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .menu-button span {
+      display: block;
+      width: 24px;
+      height: 3px;
+      background: white;
+      border-radius: 2px;
+    }
+
+    .top-nav {
+      position: absolute;
+      top: 64px;
+      right: 18px;
+      display: none;
+      background: rgba(10, 78, 122, 0.96);
+      border-radius: 10px;
+      padding: 12px 14px;
+      min-width: 180px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+      z-index: 10;
+    }
+
+    .top-nav.open {
+      display: block;
+    }
+
+    .top-nav a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      padding: 8px 4px;
+      font-size: 0.95rem;
+    }
+
+    .top-nav a:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+    }
+
+    .page-shell {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 34px 0 60px;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px var(--shadow);
+      overflow: hidden;
+    }
+
+    .map-section {
+      padding: 0;
+      background: #eff2f5;
+      border-color: #e2e7ec;
+    }
+
+    .map-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      padding: 18px 18px 10px;
+    }
+
+    .map-pin {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      vertical-align: middle;
+      color: var(--blue);
+      flex-shrink: 0;
+    }
+
+    .map-pin svg,
+    .weather-icon svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    #shelterMap {
+      width: 100%;
+      height: 420px;
+      background: #d9edf8;
+    }
+
+    .weather-panel {
+      margin-top: 32px;
+      padding: 18px 18px 12px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .weather-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .weather-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: clamp(1.2rem, 2vw, 2rem);
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .weather-icon {
+      width: 26px;
+      height: 26px;
+      display: inline-block;
+      color: #2b9fe8;
+      flex-shrink: 0;
+    }
+
+    .refresh-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: none;
+      color: #1aa765;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .refresh-icon {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #1aa765;
+      border-left-color: transparent;
+      border-radius: 50%;
+      transform: rotate(35deg);
+      position: relative;
+      display: inline-block;
+    }
+
+    .refresh-icon::before {
+      content: "";
+      position: absolute;
+      right: -2px;
+      top: -2px;
+      border: 5px solid transparent;
+      border-top-color: #1aa765;
+      transform: rotate(30deg);
+    }
+
+    .weather-body {
+      padding-top: 16px;
+    }
+
+    .weather-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 1rem;
+    }
+
+    .weather-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #21b96a;
+      display: inline-block;
+      box-shadow: 0 0 0 3px rgba(33,185,106,0.15);
+    }
+
+    .weather-meta {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 10px;
+      line-height: 1.8;
+    }
+
+    .weather-meta strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .page-shell {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      #shelterMap {
+        height: 320px;
+      }
+
+      .weather-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <!-- ヘッダー -->
-  <h1>防災アプリ</h1>
+  <header class="app-header">
+    <div class="header-inner">
+      <h1>防災アプリ</h1>
+      <button class="menu-button" type="button" aria-label="メニューを開く" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
 
-  <!-- ナビゲーション -->
-  <nav>
-    <a href="/">ホーム</a> |
-    <a href="/shelter_search">避難所検索</a> |
-    <a href="/shelter_register">避難所登録</a> |
+  <nav class="top-nav" id="menuPanel" aria-label="メインメニュー">
+    <a href="/">ホーム</a>
+    <a href="/shelter_search">避難所検索</a>
+    <a href="/shelter_register">避難所登録</a>
     <a href="/board">指示・発信ボード</a>
-    ｜
     {% if session.logged_in %}
-      ログイン中{% if session.username %}（{{ session.username }}）{% endif %}
       <a href="/logout">ログアウト</a>
     {% else %}
-      未ログイン
       <a href="/login">ログイン</a>
     {% endif %}
   </nav>
-  <hr>
 
-  <main>
-    <!-- ここに子テンプレートの content が入る -->
+  <main class="page-shell">
     {% block content %}{% endblock %}
   </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const button = document.querySelector('.menu-button');
+      const panel = document.getElementById('menuPanel');
+      if (!button || !panel) return;
+
+      button.addEventListener('click', function () {
+        const isOpen = panel.classList.toggle('open');
+        button.setAttribute('aria-expanded', String(isOpen));
+      });
+
+      document.addEventListener('click', function (event) {
+        if (!panel.contains(event.target) && !button.contains(event.target)) {
+          panel.classList.remove('open');
+          button.setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
